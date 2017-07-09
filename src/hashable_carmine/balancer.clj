@@ -1,6 +1,8 @@
-(ns hashable-carmine.hash)
+(ns hashable-carmine.balancer)
 
-(defn linear-congruential-next-double [^long state]
+(defn- linear-congruential-next-double
+  "Translate from https://github.com/google/guava/blob/v20.0/guava/src/com/google/common/hash/Hashing.java#L691"
+  [^long state]
   (println state (type state) (unchecked-multiply state (long 2862933555777941757)))
   (let [state (+ (unchecked-multiply state (long 2862933555777941757)) 1)]
     (* )
@@ -8,7 +10,9 @@
      (/ (double (+ (int (unsigned-bit-shift-right state 33)) 1))
         2.147483648E9)]))
 
-(defn consistent-hash [input buckets-count]
+(defn- consistent-hash
+  "Translate from https://github.com/google/guava/blob/v20.0/guava/src/com/google/common/hash/Hashing.java#L522"
+  [input buckets-count]
   (loop [state input candidate 0]
     (let [[state next-double] (linear-congruential-next-double state)
           next (int (/ (double (+ candidate 1)) next-double))]
@@ -16,7 +20,9 @@
         candidate
         (recur state next)))))
 
-(defn hash-code [^String key]
+(defn- hash-code
+  "Translate from https://github.com/google/guava/blob/v20.0/guava/src/com/google/common/hash/HashCode.java#L259"
+  [^String key]
   (let [bs (.getBytes key)
         ret (long (bit-and (first bs) 0xFF))
         index-limit (min (count bs) 8)]
@@ -25,3 +31,13 @@
         (let [b (bit-shift-left (bit-and (long (get bs index)) 0xFF) (* index 8))]
           (recur (bit-or ret b) (inc index)))
         ret))))
+
+(defprotocol LoadBalancer
+  (choose-spec [this hash-key candidate-specs]))
+
+(defrecord ConsistentHashBalancer []
+  LoadBalancer
+  (choose-spec [this hash-key candidate-specs]
+    (nth candidate-specs
+         (consistent-hash (hash-code hash-key)
+                          (count candidate-specs)))))

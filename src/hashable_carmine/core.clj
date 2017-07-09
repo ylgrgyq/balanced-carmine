@@ -1,23 +1,15 @@
 (ns hashable-carmine.core
   (:require [taoensso.carmine :as car]
             [taoensso.carmine.commands :as cmds]
-            [hashable-carmine.hash :as hash])
+            [hashable-carmine.balancer :as balancer])
   (:import (com.google.common.hash Hashing HashCode)))
 
-(defn- get-spec [hash-key hash-fn candidate-specs]
-  (println "get spec" hash-key candidate-specs)
+(defn- get-spec [hash-key balancer candidate-specs]
   (if (string? hash-key)
-    (nth candidate-specs
-         (hash-fn hash-key candidate-specs))
+    (balancer/choose-spec balancer hash-key candidate-specs)
     (first candidate-specs)))
 
-(defn default-hash-fn [hash-key candidate-specs]
-  (nth candidate-specs
-       (-> (.getBytes ^String hash-key)
-           (HashCode/fromBytes)
-           (Hashing/consistentHash (count candidate-specs)))))
-
-
+(def ^:private default-load-balancer (balancer/->ConsistentHashBalancer))
 
 (defn- parse-hash-key [args]
   (when-not (or (= :as-pipeline (first args))
@@ -35,13 +27,13 @@
                [conn-opts hash-key & body]
                [conn-opts :as-pipeline & body]
                [conn-opts & body])}
-  [conn-opts & args]                                        ; [conn-opts & [a1 & an :as args]]
+  [conn-opts & args] ; [conn-opts & [a1 & an :as args]]
   (let [hash-key (gensym 'hash-key)]
-    `(let [{specs-group# :specs-group hash-fn# :hash-fn
-            :or          {hash-fn# default-hash-fn}} ~conn-opts
+    `(let [{specs-group# :specs-group balancer# :load-balancer
+            :or          {balancer# default-load-balancer}} ~conn-opts
            ~hash-key  ~(parse-hash-key args)
            spec#      (get-spec ~hash-key
-                                hash-fn#
+                                balancer#
                                 specs-group#)
            conn-opts# (assoc ~conn-opts :spec spec#)]
        (car/wcar conn-opts#
