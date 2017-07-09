@@ -1,0 +1,1 @@
+(ns hashable-carmine.hash)
