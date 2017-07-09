@@ -1,8 +1,7 @@
-(ns hashable-carmine.core
+(ns balanced-carmine.core
   (:require [taoensso.carmine :as car]
             [taoensso.carmine.commands :as cmds]
-            [hashable-carmine.balancer :as balancer])
-  (:import (com.google.common.hash Hashing HashCode)))
+            [balanced-carmine.balancer :as balancer]))
 
 (defn- get-spec [hash-key balancer candidate-specs]
   (if (string? hash-key)

@@ -1,4 +1,4 @@
-(ns hashable-carmine.balancer)
+(ns balanced-carmine.balancer)
 
 (defn- linear-congruential-next-double
   "Translate from https://github.com/google/guava/blob/v20.0/guava/src/com/google/common/hash/Hashing.java#L691"
