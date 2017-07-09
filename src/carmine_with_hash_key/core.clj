@@ -1,14 +1,14 @@
-(ns balanced-carmine.core
+(ns carmine-with-hash-key.core
   (:require [taoensso.carmine :as car]
             [taoensso.carmine.commands :as cmds]
-            [balanced-carmine.balancer :as balancer]))
+            [carmine-with-hash-key.hashing :as hash]))
 
 (defn- get-spec [hash-key balancer candidate-specs]
   (if (string? hash-key)
-    (balancer/choose-spec balancer hash-key candidate-specs)
+    (hash/choose-spec balancer hash-key candidate-specs)
     (first candidate-specs)))
 
-(def ^:private default-load-balancer (balancer/->ConsistentHashBalancer))
+(def ^:private default-load-balancer (hash/->ConsistentHasher))
 
 (defn- parse-hash-key [args]
   (when-not (or (= :as-pipeline (first args))

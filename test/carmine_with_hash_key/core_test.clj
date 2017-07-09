@@ -1,6 +1,6 @@
-(ns balanced-carmine.core-test
+(ns carmine-with-hash-key.core-test
   (:require [clojure.test :refer :all]
-            [balanced-carmine.core :refer :all]))
+            [carmine-with-hash-key.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
