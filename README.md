@@ -1,36 +1,19 @@
-# hashable-carmine
-
-FIXME: description
-
-## Installation
-
-Download from http://example.com/FIXME.
+# balanced-carmine
 
 ## Usage
 
-FIXME: explanation
-
-    $ java -jar hashable-carmine-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
+```
+[balanced-carmine "0.1.0-RC1"]
+```
 
 ## Examples
 
 ...
 
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
-Copyright © 2017 FIXME
+Copyright © 2017 ylgrgyq
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
