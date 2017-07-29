@@ -1,18 +1,24 @@
 (ns carmine-with-hash-key.core
   (:require [taoensso.carmine :as car]
-            [taoensso.carmine.commands :as cmds]
-            [carmine-with-hash-key.hashing :as hash]))
+            [taoensso.carmine.commands :as cmds])
+  (:import (com.google.common.hash Hashing HashFunction)
+           (java.nio.charset StandardCharsets)))
+
+(def ^HashFunction default-hash-fn (Hashing/murmur3_128))
+(def ^HashFunction default-load-balancer
+  (fn [hash-key candidate-specs]
+    (Hashing/consistentHash (.hashString default-hash-fn hash-key StandardCharsets/UTF_8)
+                            (count candidate-specs))))
 
 (defn- get-spec [hash-key balancer candidate-specs]
   (if (string? hash-key)
-    (hash/choose-spec balancer hash-key candidate-specs)
+    (nth candidate-specs
+         (balancer hash-key candidate-specs))
     (first candidate-specs)))
-
-(def ^:private default-load-balancer (hash/->ConsistentHasher))
 
 (defn- parse-hash-key [args]
   (when-not (or (= :as-pipeline (first args))
-           (list? (first args)))
+                (list? (first args)))
     (first args)))
 
 (defmacro wcar
